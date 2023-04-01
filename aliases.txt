@@ -1,0 +1,14 @@
+@echo off
+
+:: Command Shortcuts
+DOSKEY ls=dir /B $*
+DOSKEY open=start $*
+DOSKEY mv=move $*
+DOSKEY cp=copy $*
+doskey rm=rmdir $*
+DOSKEY cat=type $*
+DOSKEY history=doskey /history
+DOSKEY vi=code $*
+DOSKEY activate=.\$*\Scripts\activate
+DOSKEY vz=code C:\Users\<your_user>\.cmd
+DOSKEY home=cd C:\Users\<your_user>\

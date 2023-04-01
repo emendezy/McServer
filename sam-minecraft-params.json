@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "MinecraftKeyPairName",
+        "ParameterValue": "MinecraftServerKeyPair"
+    },
+    {
+        "ParameterKey": "SSHPort",
+        "ParameterValue": "22"
+    },
+    {
+        "ParameterKey": "MinecraftServerPort",
+        "ParameterValue": "25565"
+    }
+]

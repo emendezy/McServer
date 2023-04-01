@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-mc-server
+
+  Sample SAM Template for sam-mc-server
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    CodeUri: lambdas/
+    Timeout: 300  # 6 minutes (shouldn't need this long but to be safe)
+    MemorySize: 128
+    Runtime: python3.9
+    Architectures:
+      - x86_64
+Parameters:
+  MinecraftKeyPairName:
+    Type: String
+    Default: MinecraftServerKeyPair
+  SSHPort:
+    Type: String
+    Default: "22"
+  MinecraftServerPort:
+    Type: String
+    Default: "25565"
+  LambdaStartS3BucketName:
+    Type: String
+    Default: minecraft-server-102938475
+Resources:
+  # EC2
+  MinecraftServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: 'ami-0c94855ba95c71c99' # Amazon Linux AMI 2 x86
+      InstanceType: t2.small
+      KeyName: !Ref MinecraftKeyPairName
+      # UserData: # This isn't working rn, just have to run this setup script manually after create-stack
+      #   'Fn::Base64': !Sub |
+      #     #!/bin/bash
+      #     $(cat set_up_ec2_minecraft_server.sh)
+      Tags:
+        - Key: "Name"
+          Value: "minecraft_server"
+        - Key: "Costcenter"
+          Value: "minecraft"
+      SecurityGroups:
+        - !Ref MinecraftServerSecurityGroup
+        - !Ref SSHSecurityGroup
+
+  # Security Groups
+  MinecraftServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Minecraft server connection
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref MinecraftServerPort
+          ToPort: !Ref MinecraftServerPort
+          CidrIp: 0.0.0.0/0
+
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSH entry point
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref SSHPort
+          ToPort: !Ref SSHPort
+          CidrIp: 0.0.0.0/0
+
+  # Lambdas
+  StartMyServerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: start_mc.handler
+      Role: !GetAtt LambdaStartEC2Role.Arn
+      Environment:
+        Variables:
+          INSTANCE_ID: !Ref MinecraftServer
+
+  # Simple Email Service Rules
+  LambdaTriggerRuleSet:
+    Type: AWS::SES::ReceiptRuleSet
+    Properties:
+      RuleSetName: LambdaTriggerRuleSet
+
+  LambdaTriggerRule:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      RuleSetName: !Ref LambdaTriggerRuleSet
+      Rule:
+        Name: LambdaTriggerRule
+        Enabled: true
+        Recipients:
+          - startmeup@bahbahbah-bahbahbah.bah
+        Actions:
+          - LambdaAction:
+              FunctionArn: !GetAtt StartMyServerLambda.Arn
+
+  # Roles
+  LambdaStartEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LambdaStartEC2Role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+        - PolicyName: EC2StartPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:StartInstances
+                Resource:
+                  - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/${MinecraftServer}"
+        - PolicyName: LogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: arn:aws:lambda:*:*:*
