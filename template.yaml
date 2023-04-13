@@ -87,16 +87,19 @@ Resources:
 
   LambdaTriggerRule:
     Type: AWS::SES::ReceiptRule
+    DependsOn:
+      - StartLambdaPermission
     Properties:
       RuleSetName: !Ref LambdaTriggerRuleSet
       Rule:
         Name: LambdaTriggerRule
         Enabled: true
         Recipients:
-          - startmeup@bahbahbah-bahbahbah.bah
+          - awsminecraftsam@gmail.com
         Actions:
           - LambdaAction:
               FunctionArn: !GetAtt StartMyServerLambda.Arn
+              InvocationType: Event
 
   # Roles
   LambdaStartEC2Role:
@@ -132,11 +135,11 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: LambdaInvokePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource: arn:aws:lambda:*:*:*
+
+  StartLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref StartMyServerLambda
+      Principal: ses.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
