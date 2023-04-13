@@ -21,7 +21,6 @@ aws ec2 import-key-pair --key-name MinecraftServerKeyPair --public-key-material 
 
 ### Build New Stack
 - First we must prep a few AWS services manually before we can create our new stack
-    -
 - Create new minecraft server stack
 ```
 make new-stack
@@ -52,3 +51,8 @@ vi eula.txt
 java -jar server.jar # This will take some time to set up server world and objects
 ```
 
+### Finish Setting up SES service
+- We will be using the AWS SES service to start our EC2 instance. This means we will need to register our the Recipient email attached to our RecieptRule
+- Go to AWS console -> SES -> Verified Identities
+    - Create a new identity, select email type unless you want to use a domain instead
+    - Accept the confirmation email and you're all set here

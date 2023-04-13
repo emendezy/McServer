@@ -79,11 +79,19 @@ Resources:
         Variables:
           INSTANCE_ID: !Ref MinecraftServer
 
+  # CloudWatch log groups
+  StartMyServerLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/StartMyServerLambda
+
   # Simple Email Service Rules
   LambdaTriggerRuleSet:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
       RuleSetName: LambdaTriggerRuleSet
+    DependsOn:
+      - StartMyServerLambda
 
   LambdaTriggerRule:
     Type: AWS::SES::ReceiptRule
