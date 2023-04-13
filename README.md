@@ -56,3 +56,13 @@ java -jar server.jar # This will take some time to set up server world and objec
 - Go to AWS console -> SES -> Verified Identities
     - Create a new identity, select email type unless you want to use a domain instead
     - Accept the confirmation email and you're all set here
+- TODO: Lambda can start the EC2 instance but the SES service isn't working as intended
+Notes:
+- We could use an api gateway attached to the lambda instead
+- Then users could send a curl request
+```shell
+curl -X POST -H "Content-Type: application/json" -d '{"INSTANCE_ID":"i-0b500200f9d291f35"}' https://sq8wo7aqc3.execute-api.us-east-1.amazonaws.com/gang/start-emendez-mc-server
+
+# currently getting response {"message": "Internal server error"}
+
+```
