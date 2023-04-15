@@ -14,6 +14,7 @@ Globals:
     Runtime: python3.9
     Architectures:
       - x86_64
+
 Parameters:
   MinecraftKeyPairName:
     Type: String
@@ -27,6 +28,7 @@ Parameters:
   LambdaStartS3BucketName:
     Type: String
     Default: minecraft-server-102938475
+
 Resources:
   # EC2
   MinecraftServer:
@@ -35,10 +37,6 @@ Resources:
       ImageId: 'ami-0c94855ba95c71c99' # Amazon Linux AMI 2 x86
       InstanceType: t2.small
       KeyName: !Ref MinecraftKeyPairName
-      # UserData: # This isn't working rn, just have to run this setup script manually after create-stack
-      #   'Fn::Base64': !Sub |
-      #     #!/bin/bash
-      #     $(cat set_up_ec2_minecraft_server.sh)
       Tags:
         - Key: "Name"
           Value: "minecraft_server"
@@ -74,17 +72,34 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: start_mc.handler
-      Role: !GetAtt LambdaStartEC2Role.Arn
+      Role: !GetAtt LambdaEC2Role.Arn
       Events:
-        ApiGatewayEvent:
+        StartMcServerApiEvent:
           Type: Api
           Properties:
             Path: /start-emendez-mc-server
             Method: post
+            RestApiId: !Ref StartMcServerAPIGateway
       Environment:
         Variables:
           INSTANCE_ID: !Ref MinecraftServer
 
+  StopMyServerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: stop_mc.handler
+      Role: !GetAtt LambdaEC2Role.Arn
+      Environment:
+        Variables:
+          INSTANCE_ID: !Ref MinecraftServer
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(5 minutes)
+            # Schedule: cron(0 10,16,23 * * ? *)
+
+  # API Gateway
   StartMcServerAPIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -120,36 +135,19 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: /aws/lambda/StartMyServerLambda
+      RetentionInDays: 7
 
-  # Simple Email Service Rules
-  LambdaTriggerRuleSet:
-    Type: AWS::SES::ReceiptRuleSet
+  StartMcServerAPIGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
-      RuleSetName: LambdaTriggerRuleSet
-    DependsOn:
-      - StartMyServerLambda
-
-  LambdaTriggerRule:
-    Type: AWS::SES::ReceiptRule
-    DependsOn:
-      - StartLambdaPermission
-    Properties:
-      RuleSetName: !Ref LambdaTriggerRuleSet
-      Rule:
-        Name: LambdaTriggerRule
-        Enabled: true
-        Recipients:
-          - awsminecraftsam@gmail.com
-        Actions:
-          - LambdaAction:
-              FunctionArn: !GetAtt StartMyServerLambda.Arn
-              InvocationType: Event
+      LogGroupName: /aws/lambda/StartMcServerAPIGateway
+      RetentionInDays: 7
 
   # Roles
-  LambdaStartEC2Role:
+  LambdaEC2Role:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: LambdaStartEC2Role
+      RoleName: LambdaEC2Role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -160,13 +158,14 @@ Resources:
           Action:
           - sts:AssumeRole
       Policies:
-        - PolicyName: EC2StartPolicy
+        - PolicyName: EC2Policy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - ec2:StartInstances
+                  - ec2:DescribeInstances
                 Resource:
                   - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/${MinecraftServer}"
         - PolicyName: LogsPolicy
@@ -179,11 +178,3 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-
-  StartLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref StartMyServerLambda
-      Principal: ses.amazonaws.com
-      SourceAccount: !Ref AWS::AccountId
