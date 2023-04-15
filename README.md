@@ -38,7 +38,7 @@ ssh -i rsa_private.pem ec2-user@<Public ipv4 ip>
 - Use the commands in set_up_ec2_minecraft_server.sh to setup your ec2 instance with minecraft server files
 
 ### Start the Server
-- Starting for the first time:
+- Starting for the first time (make sure ec2 instance is running):
 ```
 cd /opt/minecraft/server
 java -jar server.jar --nogui # server.jar is what my jar file is called
@@ -51,18 +51,21 @@ vi eula.txt
 java -jar server.jar # This will take some time to set up server world and objects
 ```
 
-### Finish Setting up SES service
-- We will be using the AWS SES service to start our EC2 instance. This means we will need to register our the Recipient email attached to our RecieptRule
-- Go to AWS console -> SES -> Verified Identities
-    - Create a new identity, select email type unless you want to use a domain instead
-    - Accept the confirmation email and you're all set here
-- TODO: Lambda can start the EC2 instance but the SES service isn't working as intended
-Notes:
-- We could use an api gateway attached to the lambda instead
-- Then users could send a curl request
+### Managing the Minecraft Server UpTime
+- Now we are ready to start our minecraft server via our lambda start_mc's api
+- First make sure your ec2 instance has been stopped
+- Next use this curl cmd in your terminal or cmd prompt to start our server. Replace strings in <> with your deployed infrastructure
+    - 'api_gateway_id' can be found in AWS::API Gateway in the aws console
+    - 'region' is wherever you're deploying. In this example, I'm in 'us-east-1'
+    - 'stage_name' is the parameter you used when creating the lambda in the sam template 'StageName'
 ```shell
-curl -X POST -H "Content-Type: application/json" -d '{}' https://sq8wo7aqc3.execute-api.us-east-1.amazonaws.com/gang/start-emendez-mc-server
-
-# currently getting response {"message": "Internal server error"}
-
+curl -X POST -H "Content-Type: application/json" -d '{}' https://<api_gateway_id>.execute-api.<region>.amazonaws.com/<stage_name>/start-mc-server
 ```
+- So an example would be:
+```shell
+curl -X POST -H "Content-Type: application/json" -d '{}' https://ncr9e5i07k.execute-api.us-east-1.amazonaws.com/gang/start-mc-server
+```
+
+## Notes and Things to Keep in Mind
+- Lambda Cloudwatch groups won't be created until the associated lambda is kicked off at least once
+- Everytime we deploy a new stack, all of the generated infrastructure will be new, and with that, ids for the api gateway, etc will change.

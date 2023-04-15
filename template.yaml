@@ -25,9 +25,9 @@ Parameters:
   MinecraftServerPort:
     Type: String
     Default: "25565"
-  LambdaStartS3BucketName:
+  UriStageName:
     Type: String
-    Default: minecraft-server-102938475
+    Default: "gang"
 
 Resources:
   # EC2
@@ -77,7 +77,7 @@ Resources:
         StartMcServerApiEvent:
           Type: Api
           Properties:
-            Path: /start-emendez-mc-server
+            Path: /start-mc-server
             Method: post
             RestApiId: !Ref StartMcServerAPIGateway
       Environment:
@@ -96,20 +96,19 @@ Resources:
         Schedule:
           Type: Schedule
           Properties:
-            Schedule: rate(5 minutes)
-            # Schedule: cron(0 10,16,23 * * ? *)
+            Schedule: cron(0 1,7,13,19 * * ? *) # Trigger at hours 1, 7, 13, 19 in utc tz of a 24 hr day
 
   # API Gateway
   StartMcServerAPIGateway:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: gang
+      StageName: !Ref UriStageName
       DefinitionBody:
         swagger: "2.0"
         info:
           title: "AWS Minecraft Server API"
         paths:
-          /start-emendez-mc-server:
+          /start-mc-server:
             post:
               x-amazon-apigateway-integration:
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StartMyServerLambda.Arn}/invocations"
@@ -128,20 +127,6 @@ Resources:
                 - "application/json"
               produces:
                 - "application/json"
-
-
-  # CloudWatch log groups
-  StartMyServerLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /aws/lambda/StartMyServerLambda
-      RetentionInDays: 7
-
-  StartMcServerAPIGatewayLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /aws/lambda/StartMcServerAPIGateway
-      RetentionInDays: 7
 
   # Roles
   LambdaEC2Role:
@@ -166,8 +151,8 @@ Resources:
                 Action:
                   - ec2:StartInstances
                   - ec2:DescribeInstances
-                Resource:
-                  - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/${MinecraftServer}"
+                  - ec2:StopInstances
+                Resource: "*"
         - PolicyName: LogsPolicy
           PolicyDocument:
             Version: '2012-10-17'
