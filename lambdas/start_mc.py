@@ -6,13 +6,21 @@ def handler(event, context):
     instance_id = os.environ.get('INSTANCE_ID')
     
     # Create an EC2 client
-    ec2 = boto3.client('ec2')
+    ec2_client = boto3.client('ec2')
     
     # Start the EC2 instance
-    ec2.start_instances(InstanceIds=[instance_id])
+    ec2_client.start_instances(InstanceIds=[instance_id])
+
+    # Public IP of ec2 instance
+    ec2_resources = boto3.resource('ec2')
+    instance = ec2_resources.Instance(instance_id)
+    public_ip_address = instance.public_ip_address
     
     # Return a success message
     return {
         'statusCode': 200,
-        'body': 'Started EC2 instance: ' + instance_id
+        'body': (
+            f'Started EC2 instance: {instance_id} | '
+            f'Connect to the server at IP: {public_ip_address}'
+        )
     }
