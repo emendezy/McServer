@@ -7,7 +7,7 @@ sudo curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto
 sudo yum install -y java-19-amazon-corretto-devel.x86_64
 
 # add dedicated user for doing minecraft server work
-sudo adduser minecraft &&
+sudo adduser minecraft
 
 # use root user to set up our server files
 sudo su
@@ -19,11 +19,12 @@ wget https://launcher.mojang.com/v1/objects/a16d67e5807f57fc4e550299cf2022619449
 
 # set our minecraft user to own the opt/minecraft/ directory
 sudo chown -R minecraft:minecraft /opt/minecraft/
+sudo chown minecraft:minecraft /opt/minecraft/server/server.jar
 
 # setup configuration for minecraft.service so the server will start when the ec2 instance is running
 # FILE = /etc/systemd/system/minecraft.service
-vi /etc/systemd/system/minecraft.service  # place text from [Unit] to EOM, but not including "EOM"
-/bin/cat <<EOM >$FILE
+vi /etc/systemd/system/minecraft.service  # paste text inside of the block comment(""" """)
+# """
 [Unit]
 Description=Minecraft Server
 After=network.target
@@ -42,6 +43,8 @@ ExecStop=/opt/minecraft/tools/mcrcon/mcrcon -H 127.0.0.1 -P 25575 -p strong-pass
 
 [Install]
 WantedBy=multi-user.target
-EOM
-chmod 664 $FILE
-systemctl daemon-reload
+# """
+sudo systemctl enable minecraft
+sudo systemctl start minecraft # start minecraft server with daemon
+# ^ This may not work if you haven't started it once and changed the eula.txt file (see README)
+sudo systemctl status minecraft # check server status/logs

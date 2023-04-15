@@ -1,3 +1,4 @@
 venv/*
 awsminecraft/*
 .aws-sam/*
+useful_cmds.txt
