@@ -79,3 +79,4 @@ curl -X POST -H "Content-Type: application/json" -d '{}' https://abc123.execute-
 - EC2 Instance ipv4 public IP will change every time it's stopped and started so to ssh into the box, you'll need to check the new ipv4 address on the AWS::EC2::Instances page in the console or get it from the curl cmd's response
 - Lambda Cloudwatch groups won't be created until the associated lambda is kicked off at least once
 - Everytime we deploy a new stack, all of the generated infrastructure will be new, and with that, ids for the api gateway, etc will change.
+- If you want to have a static IP for your server, you can set an Elastic IP on the EC2 instance, but that will create extra charges to your aws account for when your EC2 instance is turned off
