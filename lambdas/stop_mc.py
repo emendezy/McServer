@@ -11,7 +11,7 @@ def handler(event, context):
     now = datetime.now(launch_time.tzinfo)
     elapsed_time = now - launch_time
     
-    if elapsed_time >= timedelta(hours=6):
+    if elapsed_time >= timedelta(hours=3):
         instance.stop()
         return {
             'statusCode': 200,

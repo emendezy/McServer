@@ -19,7 +19,6 @@ confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "sam-mc-server"
 region = "us-east-1"
-parameter_overrides = "MinecraftKeyPairName=\"MinecraftServerKeyPair\" SSHPort=\"22\" MinecraftServerPort=\"25565\" LambdaStartS3BucketName=\"minecraft-server-102938475\""
 image_repositories = []
 
 [default.package.parameters]
