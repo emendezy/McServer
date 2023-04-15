@@ -61,7 +61,7 @@ Notes:
 - We could use an api gateway attached to the lambda instead
 - Then users could send a curl request
 ```shell
-curl -X POST -H "Content-Type: application/json" -d '{"INSTANCE_ID":"i-0b500200f9d291f35"}' https://sq8wo7aqc3.execute-api.us-east-1.amazonaws.com/gang/start-emendez-mc-server
+curl -X POST -H "Content-Type: application/json" -d '{}' https://sq8wo7aqc3.execute-api.us-east-1.amazonaws.com/gang/start-emendez-mc-server
 
 # currently getting response {"message": "Internal server error"}
 
