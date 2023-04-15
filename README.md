@@ -36,7 +36,7 @@ ssh -i rsa_private.pem ec2-user@<Public ipv4 ip>
 - There won't be anything here yet besides the linux system files, but we will change that shortly
 
 ### Install Java
-- Use the commands in set_up_ec2_minecraft_server.sh to setup your ec2 instance with minecraft server files
+- Use the commands in `set_up_ec2_minecraft_server.sh` to setup your ec2 instance with minecraft server files
 
 ### Start the Server
 - Starting for the first time (make sure ec2 instance is running):
@@ -60,11 +60,11 @@ java -jar server.jar # This will take some time to set up server world and objec
 
 ### Managing the Minecraft Server UpTime
 - Now we are ready to start our minecraft server via our lambda start_mc's api
-- First make sure your ec2 instance has been stopped
+- First make sure your ec2 instance has been stopped and you've completed the initial server.jar setup steps (changing eula.txt)
 - Next use this curl cmd in your terminal or cmd prompt to start our server. Replace strings in <> with your deployed infrastructure
-    - 'api_gateway_id' can be found in AWS::API Gateway in the aws console
-    - 'region' is wherever you're deploying. In this example, I'm in 'us-east-1'
-    - 'stage_name' is the parameter you used when creating the lambda in the sam template 'StageName'
+    - `api_gateway_id` can be found in AWS::API Gateway in the aws console
+    - `region` is wherever you're deploying. In this example, I'm in `us-east-1`
+    - `stage_name` is the parameter you used when creating the lambda in the sam template `StageName`
 ```shell
 curl -X POST -H "Content-Type: application/json" -d '{}' https://<api_gateway_id>.execute-api.<region>.amazonaws.com/<stage_name>/start-mc-server
 ```
@@ -72,7 +72,7 @@ curl -X POST -H "Content-Type: application/json" -d '{}' https://<api_gateway_id
 ```shell
 curl -X POST -H "Content-Type: application/json" -d '{}' https://abc123.execute-api.us-east-1.amazonaws.com/gang/start-mc-server
 ```
-- If you want to save your custom curl cmd, I've got a file called `curl_cmd.sh` in the .gitignore you can make and store it
+- If you want to save your custom curl cmd, I've got a file called `curl_cmd.sh` in the `.gitignore` you can make and store it
 - This curl cmd should return the dynamically created IP address for the minecraft server. Use it in conjunction with your configured port (IPv4:port)
 
 ## Notes and Things to Keep in Mind
