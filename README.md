@@ -14,6 +14,9 @@ todo add notes about how to do this (tutorial)
     - installation: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
     - https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
 
+- Minecraft Account
+    - https://www.minecraft.net/en-us/download
+
 ## Setup
 
 ### Create ssh-key pair
