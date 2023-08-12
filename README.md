@@ -1,30 +1,51 @@
 # Minecraft Server via AWS Cloudformation
-*(Made for Windows but Mac setup is similar, just cmds have different syntax)*
+*(Made for Windows but Mac setup is similar, if not more straightforward, just cmds have different syntax)*
 *(If you want my DOSKEY map for making alias cmds, see aliases.txt)*
+todo add notes about how to do this (tutorial)
 - *https://superuser.com/questions/1134368/create-permanent-doskey-in-windows-cmd (helpful tutorial)*
+
+**Made with the help of ChatGPT ;) -- If you have any questions about the process or some code doesn't work, chatGPT is pretty helpful at explaining what the code is doing, what is wrong with the code, and/or what needs to be fixed to accomplish your goal.**
+
+## Pre-reqs:
+- AWS account (free tier works)
+    - https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all
+
+- AWS Cli
+    - installation: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+    - https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
 
 ## Setup
 
 ### Create ssh-key pair
 - generate a private/public rsa ssh key so we'll be able to connect to the ec2 instance hosting our minecraft server later. *Make sure to remember where you save your private/public keys as we will use them to create an ec2 keypair*
-- windows: use putty
-    - putty will create a .ppk private key file, but to connect to aws ec2 instance we will need to convert this to a .pem extension file. You can use putty conversions to do this.
+- windows: download putty (https://www.putty.org/)
+    - open puttygen gui
+    - with puttygen you can create a .ppk private key file, but to connect to aws ec2 instance we will need to convert this to a .pem extension file. You can use putty conversions to do this.
+    - puttygen has a conversions tab where you can import a key
+        - load private key .ppk and click conversions -> export to OpenSSH Key
+        - download the public key as well, you'll need it to create an ec2::keypair later
 - mac: use keygen
 
 ### Upload ssh public key as ec2 keypair
 - We will reference this later on our sam-minecraft.yaml cloudformation template
 - Windows (path will be wherever your sshkey is located):
+todo aws cli and pip packages needed
+https://joegalley.com/articles/how-to-create-aws-access-key-and-secret-access-key
+configure aws account and config/credentials
 ```
 aws ec2 import-key-pair --key-name MinecraftServerKeyPair --public-key-material file://C:\Users\erict\.ssh\rsa_public
+aws ec2 import-key-pair --key-name MinecraftServerKeyPair2 --public-key-material file://C:\Users\erict\.ssh\rsa_public
 ```
 - After uploading this keypair, set the name you set as the KeyPair name as the KeyName for the ec2 instance. You can do this by updating the value in the params file
 
-### Build New Stack
-- First customize the 'Parameters' section in the template.yaml to be to your specifications
+### Deploy a New Stack or Deploy changes to an existing stack
+- First customize the 'Parameters' section in the template.yaml to be to your specifications for the things spun up
 - Create new minecraft server stack
+todo run thru an iam role for user deploying stack
 ```
 make build && make deploy
 ```
+todo rename template
 
 ### Attempt ssh into server
 - Now the ec2 instance is running and has our KeyPair attached, we can attempt to ssh into the box
