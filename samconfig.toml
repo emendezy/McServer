@@ -5,6 +5,7 @@ version = 0.1
 [default]
 [default.global.parameters]
 stack_name = "sam-mc-server"
+template_file = "mc-server-stack.yaml"
 
 [default.build.parameters]
 cached = true

@@ -61,13 +61,16 @@ ssh -i rsa_private.pem ec2-user@<Public ipv4 ip>
 
 ### Install Java
 - Use the commands in `set_up_ec2_minecraft_server.sh` to setup your ec2 instance with minecraft server files
+- WIP: Run the bash script minecraft_server_setup.sh with sudo
+- Copy minecraft_server_setup.sh into home dir of ec2 box and run:
+```sudo bash minecraft_server_setup.sh```
+    - *NOTE* the commented lines paste weirdly sometimes, so make sure when u paste, the bash script isn't commented out
 
 ### Start the Server
 - Starting for the first time (make sure ec2 instance is running):
 ```
 cd /opt/minecraft/server
 sudo su
-java -jar server.jar --nogui # server.jar is what my jar file is called
 vi eula.txt
 ########     You will have to change eula.txt (eula=false => eula=true)     ###########
 ########  without this change, the server will shut down after you start it ###########
