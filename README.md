@@ -60,9 +60,11 @@ ssh -i rsa_private.pem ec2-user@<Public ipv4 ip>
 - There won't be anything here yet besides the linux system files, but we will change that shortly
 
 ### Install Java
+#### Option 1:  
 - Use the commands in `set_up_ec2_minecraft_server.sh` to setup your ec2 instance with minecraft server files
-- WIP: Run the bash script minecraft_server_setup.sh with sudo
-- Copy minecraft_server_setup.sh into home dir of ec2 box and run:
+#### Option 2:
+- WIP: Run the bash script minecraft_server_setup.sh
+    - Copy minecraft_server_setup.sh into home dir of ec2 box and run:
 ```
 sudo su - root # must run as root -- see script for what it does
 sudo bash minecraft_server_setup.sh
