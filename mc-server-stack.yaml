@@ -77,7 +77,7 @@ Resources:
           Properties:
             Path: /start-mc-server
             Method: post
-            RestApiId: !Ref StartMcServerAPIGateway
+            RestApiId: !Ref McServerAPIGateway
       Environment:
         Variables:
           INSTANCE_ID: !Ref MinecraftServer
@@ -91,13 +91,19 @@ Resources:
         Variables:
           INSTANCE_ID: !Ref MinecraftServer
       Events:
+        StopMcServerApiEvent:
+          Type: Api
+          Properties:
+            Path: /stop-mc-server
+            Method: post
+            RestApiId: !Ref McServerAPIGateway
         Schedule:
           Type: Schedule
           Properties:
             Schedule: cron(0 1,7,13,19 * * ? *) # Trigger at hours 1, 7, 13, 19 in utc tz of a 24 hr day
 
   # API Gateway
-  StartMcServerAPIGateway:
+  McServerAPIGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref UriStageName
@@ -121,6 +127,25 @@ Resources:
                   allowHeaders:
                     - "*"
               responses: {}
+              consumes:
+                - "application/json"
+              produces:
+                - "application/json"
+          /stop-mc-server:
+            post:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StopMyServerLambda.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+                x-amazon-apigateway-cors:
+                  allowOrigins:
+                    - "*"
+                  allowMethods:
+                    - POST
+                  allowHeaders:
+                    - "*"
+              responses: { }
               consumes:
                 - "application/json"
               produces:

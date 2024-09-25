@@ -134,14 +134,24 @@ sudo systemctl start minecraft
       - This is the ID in the list view, not the resource_id
     - `region` is wherever you're deploying. In this example, I'm in `us-east-1`
     - `stage_name` is the parameter you used when creating the lambda in the sam template `StageName`
-```shell
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{}' https://<api_gateway_id>.execute-api.<region>.amazonaws.com/<stage_name>/start-mc-server
 ```
 - So an example would be:
-```shell
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{}' https://abc123.execute-api.us-east-1.amazonaws.com/gang/start-mc-server
 ```
-- If you want to save your custom curl cmd, I've got a file called `curl_cmd.sh` in the `.gitignore` you can make and store it
+- Stop server manually using this curl (Otherwise it'll auto stop after about 3 hours):
+```bash
+curl -X POST \
+	-H "Content-Type: application/json" \
+	-d '{
+		"force_stop": "true"
+    }' \
+	https://<api_gateway_id>.execute-api.<region>.amazonaws.com/<stage_name>/stop-mc-server
+```
+
+- If you want to save your custom curl cmds, I've got a file called `curl_cmd.sh` in the `.gitignore` you can make and store it
 - This curl cmd should return the dynamically created IP address for the minecraft server. Use it in conjunction with your configured port (IPv4:port)
 
 ## Notes and Things to Keep in Mind
