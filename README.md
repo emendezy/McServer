@@ -19,6 +19,26 @@ todo add notes about how to do this (tutorial)
 
 ## Setup
 
+### AWS account setup
+- Create new user in the IAM section
+  - Open user and go to "security credentials" and create a new "access key" -- save this info for later
+- Attach Policies directly to that user in the IAM user:
+  - `AmazonS3FullAccess`
+  - `IAMFullAccess`
+  - `AWSLambda_FullAccess`
+  - `AmazonAPIGatewayAdministrator`
+  - `AWSCloudFormationFullAccess`
+  - `AmazonEC2FullAccess`
+  - `AmazonEventBridgeFullAccess`
+- Install awscli with brew:
+  - `brew install awscli`
+- Run `aws configure`
+  - Use the access key id and secret you created for your user to finish setting up the aws cli
+  - the region would be where ever you are closest to, for me it's `us-east-1`
+- Install the aws-sam-cli
+  - `brew install aws-sam-cli`
+  - This will be used to deploy the cloudformation via a SAM template
+
 ### Create ssh-key pair
 - generate a private/public rsa ssh key so we'll be able to connect to the ec2 instance hosting our minecraft server later. *Make sure to remember where you save your private/public keys as we will use them to create an ec2 keypair*
 - windows: download putty (https://www.putty.org/)
@@ -28,18 +48,25 @@ todo add notes about how to do this (tutorial)
         - load private key .ppk and click conversions -> export to OpenSSH Key
         - download the public key as well, you'll need it to create an ec2::keypair later
 - mac: use keygen
+  - Go to .ssh directory: `cd ~/.ssh/` 
+  - `ssh-keygen -t rsa -b 4096`
+  - save the name of the key as `id_rsa_aws`
 
 ### Upload ssh public key as ec2 keypair
 - We will reference this later on our sam-minecraft.yaml cloudformation template
 - Windows (path will be wherever your sshkey is located):
-todo aws cli and pip packages needed
-https://joegalley.com/articles/how-to-create-aws-access-key-and-secret-access-key
-configure aws account and config/credentials
 ```
 aws ec2 import-key-pair --key-name MinecraftServerKeyPair --public-key-material file://C:\Users\erict\.ssh\rsa_public
-aws ec2 import-key-pair --key-name MinecraftServerKeyPair2 --public-key-material file://C:\Users\erict\.ssh\rsa_public
 ```
-- After uploading this keypair, set the name you set as the KeyPair name as the KeyName for the ec2 instance. You can do this by updating the value in the params file
+- Mac:
+```bash
+cat ~/.ssh/id_rsa_aws.pub | base64
+# copy output from above and paste into this cmd
+aws ec2 import-key-pair \
+  --key-name MinecraftServerKeyPair \
+  --public-key-material <paste-your-public-key-encoded-to-base64-here>
+```
+- After uploading this keypair, set the name you set as the KeyPair name as the KeyName for the ec2 instance. You can do this by updating the value in the mc-server-stack.yaml file under `Parameters`
 
 ### Deploy a New Stack or Deploy changes to an existing stack
 - First customize the 'Parameters' section in the template.yaml to be to your specifications for the things spun up
@@ -48,14 +75,23 @@ todo run thru an iam role for user deploying stack
 ```
 make build && make deploy
 ```
-todo rename template
+- This will make the following stacks in AWS cloudformation:
+  - aws-sam-cli-managed-default
+  - mc-server-stack
+    - This will create a changeset that you need to execute -- the `deploy` cmd should prompt you to execute the changeset or your can deploy on AWS cloudformation manually.
 
 ### Attempt ssh into server
 - Now the ec2 instance is running and has our KeyPair attached, we can attempt to ssh into the box
+  - Go to AWS EC2 Instance and find the Public ipv4 ip and run the following
+Windows:
 ```
 cd <where ever your rsa_private.pem files lives>
 ssh -i rsa_private.pem ec2-user@<Public ipv4 ip>
 # The Public ipv4 ip will change everytime the ec2 box is stopped and started
+```
+Mac:
+```bash
+ssh -i ~/.ssh/id_rsa_aws ec2-user@<public-ipv4-ip>
 ```
 - There won't be anything here yet besides the linux system files, but we will change that shortly
 
@@ -82,7 +118,7 @@ vi eula.txt
 ```
 - Starting Server
 ```
-java -jar server.jar # This will take some time to set up server world and objects
+sudo systemctl start minecraft
 ```
 
 ### Connecting to the Minecraft Server
@@ -95,6 +131,7 @@ java -jar server.jar # This will take some time to set up server world and objec
 - First make sure your ec2 instance has been stopped and you've completed the initial server.jar setup steps (changing eula.txt)
 - Next use this curl cmd in your terminal or cmd prompt to start our server. Replace strings in <> with your deployed infrastructure
     - `api_gateway_id` can be found in AWS::API Gateway in the aws console
+      - This is the ID in the list view, not the resource_id
     - `region` is wherever you're deploying. In this example, I'm in `us-east-1`
     - `stage_name` is the parameter you used when creating the lambda in the sam template `StageName`
 ```shell
