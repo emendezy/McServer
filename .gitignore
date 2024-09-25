@@ -2,5 +2,5 @@ venv/*
 awsminecraft/*
 .aws-sam/*
 useful_cmds.txt
-curl_cmd.sh
+curl_cmd.txt
 .idea/*

@@ -151,7 +151,7 @@ curl -X POST \
 	https://<api_gateway_id>.execute-api.<region>.amazonaws.com/<stage_name>/stop-mc-server
 ```
 
-- If you want to save your custom curl cmds, I've got a file called `curl_cmd.sh` in the `.gitignore` you can make and store it
+- If you want to save your custom curl cmds, I've got a file called `curl_cmd.txt` in the `.gitignore` you can make and store it
 - This curl cmd should return the dynamically created IP address for the minecraft server. Use it in conjunction with your configured port (IPv4:port)
 
 ## Notes and Things to Keep in Mind
